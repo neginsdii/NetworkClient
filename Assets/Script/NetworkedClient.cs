@@ -26,8 +26,7 @@ public class NetworkedClient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S))
-            SendMessageToHost("Hello from client");
+       
 
         UpdateNetworkConnection();
     }
@@ -113,4 +112,19 @@ public class NetworkedClient : MonoBehaviour
     }
 
 
+}
+
+public static class ClientToServerSignifier
+{
+    public const int createAccount = 1;
+    public const int Login = 2;
+}
+
+
+public static class ServerToClientSignifier
+{
+    public const int LoginComplete = 1;
+    public const int LoginFailed = 2;
+    public const int AccountCreationComplete = 3;
+    public const int AccountCreationFailed = 4;
 }
