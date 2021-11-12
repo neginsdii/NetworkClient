@@ -16,10 +16,20 @@ public class NetworkedClient : MonoBehaviour
     byte error;
     bool isConnected = false;
     int ourClientID;
+    GameObject gameSystemManager;
 
     // Start is called before the first frame update
     void Start()
     {
+        GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+        foreach (GameObject go in allObjects)
+		{
+            if (go.GetComponent<GameSystemManager>() != null)
+			{
+                gameSystemManager = go;
+
+            }
+        }
         Connect();
     }
 
@@ -100,10 +110,28 @@ public class NetworkedClient : MonoBehaviour
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, connectionID, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
-
+    
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+
+        string[] csv = msg.Split(',');
+        int signifier = int.Parse(csv[0]);
+        if(signifier == ServerToClientSignifier.AccountCreationComplete)
+		{
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.MainMenu);
+		}
+        else if (signifier == ServerToClientSignifier.LoginComplete)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.MainMenu);
+
+        }
+        else if (signifier == ServerToClientSignifier.GameStart)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.GameRoom);
+
+        }
+
     }
 
     public bool IsConnected()
@@ -118,6 +146,9 @@ public static class ClientToServerSignifier
 {
     public const int createAccount = 1;
     public const int Login = 2;
+    public const int JoinQueueForGameRoom = 3;
+    public const int GameRoomPlay = 4;
+
 }
 
 
@@ -127,4 +158,6 @@ public static class ServerToClientSignifier
     public const int LoginFailed = 2;
     public const int AccountCreationComplete = 3;
     public const int AccountCreationFailed = 4;
+    public const int GameStart = 5;
+
 }
