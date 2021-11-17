@@ -1,3 +1,7 @@
+/*
+ * I used https://www.youtube.com/watch?v=IRAeJgGkjHk&t=894s code to implement chat box and message system
+ * 
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,8 +9,15 @@ using UnityEngine.UI;
 
 public class GameSystemManager : MonoBehaviour
 {
-    GameObject SubmitButton, UsernameInput, PasswordInput, createToggle, LoginToggle , JoinGameRoomButton , MainMenu, LoginMenu, WaitingInQueueRoom , GameRoom;
+    GameObject SubmitButton, UsernameInput, PasswordInput, createToggle, LoginToggle , JoinGameRoomButton , MainMenu, LoginMenu, WaitingInQueueRoom , GameRoom,
+                ChatScroll,MsgInputField, SendTextButton;
+    GameObject HelloButton, GGButton, OOPSButton, NoButton, CurseButton,
+               WellPlayedButton, ThatwasFunButton, SickButton;
     GameObject NetworkClient;
+    
+    public List<GameObject> tokens;
+    public GameObject TextPrefaObject, ChatPanel; 
+    List<Message> messageList = new List<Message>();
  //   static GameObject instace;
     void Start()
     {
@@ -33,12 +44,49 @@ public class GameSystemManager : MonoBehaviour
             else if (go.name == "LoginMenu")
                 LoginMenu = go;
             else if (go.name == "WaitingInQueue")
-                  WaitingInQueueRoom = go;
+                WaitingInQueueRoom = go;
             else if (go.name == "GameRoom")
                 GameRoom = go;
+            else if (go.name == "ChatScroll")
+                ChatScroll = go;
+            else if (go.name == "MsgInputField")
+                MsgInputField = go;
+            else if (go.name == "SendTextButton")
+                SendTextButton = go;
+            else if (go.name == "HelloButton")
+                HelloButton = go;
+            else if (go.name == "GGButton")
+                GGButton = go;
+            else if (go.name == "OOPSButton")
+                OOPSButton = go;
+            else if (go.name == "NoButton")
+                NoButton = go;
+            else if (go.name == "CurseButton")
+                CurseButton = go;
+            else if (go.name == "WellPlayedButton")
+                WellPlayedButton = go;
+            else if (go.name == "ThatwasFunButton")
+                ThatwasFunButton = go;
+            else if (go.name == "SickButton")
+                SickButton = go;
+            else if (go.name == "Token")
+                tokens.Add(go);
+
 
         }
+       
         SubmitButton.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
+        SendTextButton.GetComponent<Button>().onClick.AddListener(SendTextButtonPressed);
+        
+        HelloButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(HelloButton.GetComponentInChildren<Text>().text); });
+        GGButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(GGButton.GetComponentInChildren<Text>().text); });
+        OOPSButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(OOPSButton.GetComponentInChildren<Text>().text); });
+        NoButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(NoButton.GetComponentInChildren<Text>().text); });
+        CurseButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(CurseButton.GetComponentInChildren<Text>().text); });
+        WellPlayedButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(WellPlayedButton.GetComponentInChildren<Text>().text); });
+        ThatwasFunButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(ThatwasFunButton.GetComponentInChildren<Text>().text); });
+        SickButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(SickButton.GetComponentInChildren<Text>().text); });
+
         LoginToggle.GetComponent<Toggle>().onValueChanged.AddListener(loginToggleChanged);
         createToggle.GetComponent<Toggle>().onValueChanged.AddListener(createToggleChanged);
         JoinGameRoomButton.GetComponent<Button>().onClick.AddListener(JoinGameRoom);
@@ -51,6 +99,30 @@ public class GameSystemManager : MonoBehaviour
         
     }
 
+    public void ChatMessageButtonsPressed(string txt)
+	{
+        string text = txt;
+        string msg;
+        msg = ClientToServerSignifier.SendTextMessage + "," + NetworkClient.GetComponent<NetworkedClient>().PlayerUserName + "," + text;
+        Debug.Log(msg);
+        NetworkClient.GetComponent<NetworkedClient>().SendMessageToHost(msg);
+
+    }
+    public void AddMessageToChatBox(string txtMesg)
+	{
+         int MaxNumOfMessages = 25;
+         MsgInputField.GetComponent<InputField>().text = "";
+        if (messageList.Count >= MaxNumOfMessages)
+		{
+            Destroy(messageList[0].textObject.gameObject);
+            messageList.Remove(messageList[0]);
+		}
+        Message newMsg = new Message(txtMesg);
+        GameObject newText = Instantiate(TextPrefaObject, ChatPanel.transform);
+        newMsg.textObject = newText.GetComponent<Text>();
+        newMsg.textObject.text = "  "+ newMsg.text;
+        messageList.Add(newMsg);
+	}
     public void SubmitButtonPressed()
 	{
         string p = PasswordInput.GetComponent<InputField>().text;
@@ -62,6 +134,16 @@ public class GameSystemManager : MonoBehaviour
          msg = ClientToServerSignifier.Login + "," + n + "," + p;
         NetworkClient.GetComponent<NetworkedClient>().SendMessageToHost(msg);
         Debug.Log(msg);
+    }
+
+    public void SendTextButtonPressed()
+	{
+        string text = MsgInputField.GetComponent<InputField>().text;
+        string msg;
+        msg = ClientToServerSignifier.SendTextMessage + "," + NetworkClient.GetComponent<NetworkedClient>().PlayerUserName + "," + text;
+        Debug.Log(msg);
+        NetworkClient.GetComponent<NetworkedClient>().SendMessageToHost(msg);
+
     }
     public void JoinGameRoom()
 	{
@@ -114,6 +196,18 @@ public class GameSystemManager : MonoBehaviour
         }
 
     }
+
+    public void markGameBoard(int indx, int token)
+	{
+		for (int i = 0; i < 9; i++)
+		{
+            if(tokens[i].GetComponent<TokenScript>().m_IndexNumber == indx)
+			{
+                tokens[i].GetComponent<TokenScript>().SetToken(token);
+
+            }
+		}
+	}
 }
 
 static public class GameState
@@ -122,4 +216,15 @@ static public class GameState
     public const int MainMenu = 2;
     public const int GameRoom = 3;
     public const int WaitingInQueue = 4;
+}
+
+[System.Serializable]
+public class Message
+{
+    public string text;
+    public Text textObject;
+    public Message(string txt)
+	{
+        this.text = txt;
+	}
 }

@@ -16,7 +16,10 @@ public class NetworkedClient : MonoBehaviour
     byte error;
     bool isConnected = false;
     int ourClientID;
+   public int tokenInGame;
+    public int otherPlayerToken;
     GameObject gameSystemManager;
+    public string PlayerUserName;
 
     // Start is called before the first frame update
     void Start()
@@ -119,16 +122,43 @@ public class NetworkedClient : MonoBehaviour
         int signifier = int.Parse(csv[0]);
         if(signifier == ServerToClientSignifier.AccountCreationComplete)
 		{
+            PlayerUserName = csv[1];
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.MainMenu);
 		}
         else if (signifier == ServerToClientSignifier.LoginComplete)
         {
+            PlayerUserName = csv[1];
+            Debug.Log(PlayerUserName);
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.MainMenu);
 
         }
         else if (signifier == ServerToClientSignifier.GameStart)
         {
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.GameRoom);
+
+        
+        }
+        else if (signifier == ServerToClientSignifier.TextChatMeassage)
+        {
+               gameSystemManager.GetComponent<GameSystemManager>().AddMessageToChatBox(csv[1]);
+
+
+        }
+        else if (signifier == ServerToClientSignifier.TurnInGame)
+        {
+            tokenInGame = int.Parse(csv[1]);
+            otherPlayerToken = int.Parse(csv[2]);
+        }
+        else if (signifier == ServerToClientSignifier.sendChoosenTokenByPlayer)
+        {
+            if(int.Parse(csv[1])== id)
+			{
+                gameSystemManager.GetComponent<GameSystemManager>().markGameBoard(int.Parse(csv[2]), tokenInGame);
+			}
+            else
+            {
+                gameSystemManager.GetComponent<GameSystemManager>().markGameBoard(int.Parse(csv[2]), otherPlayerToken);
+            }
 
         }
 
@@ -148,7 +178,8 @@ public static class ClientToServerSignifier
     public const int Login = 2;
     public const int JoinQueueForGameRoom = 3;
     public const int GameRoomPlay = 4;
-
+    public const int SendTextMessage = 5;
+    public const int SendChoosenToken = 6;
 }
 
 
@@ -159,5 +190,8 @@ public static class ServerToClientSignifier
     public const int AccountCreationComplete = 3;
     public const int AccountCreationFailed = 4;
     public const int GameStart = 5;
+    public const int TextChatMeassage = 6;
+    public const int TurnInGame = 7;
+    public const int sendChoosenTokenByPlayer = 8;
 
 }
