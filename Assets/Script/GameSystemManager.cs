@@ -12,7 +12,7 @@ public class GameSystemManager : MonoBehaviour
     GameObject SubmitButton, UsernameInput, PasswordInput, createToggle, LoginToggle , JoinGameRoomButton , MainMenu, LoginMenu, WaitingInQueueRoom , GameRoom,
                 ChatScroll,MsgInputField, SendTextButton;
     GameObject HelloButton, GGButton, OOPSButton, NoButton, CurseButton,
-               WellPlayedButton, ThatwasFunButton, SickButton;
+               WellPlayedButton, ThatwasFunButton, SickButton, GameText;
     GameObject NetworkClient;
     
     public List<GameObject> tokens;
@@ -69,6 +69,8 @@ public class GameSystemManager : MonoBehaviour
                 ThatwasFunButton = go;
             else if (go.name == "SickButton")
                 SickButton = go;
+            else if (go.name == "GameText")
+                GameText = go;
             else if (go.name == "Token")
                 tokens.Add(go);
 
@@ -163,6 +165,10 @@ public class GameSystemManager : MonoBehaviour
 
     }
 
+    public void SetGameText(string txt)
+	{
+        GameText.GetComponent<Text>().text = txt;
+	}
     public void ChangeState( int  newState)
 	{
         if(newState== GameState.LoginMenu)

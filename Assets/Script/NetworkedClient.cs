@@ -161,6 +161,11 @@ public class NetworkedClient : MonoBehaviour
             }
 
         }
+        else if (signifier == ServerToClientSignifier.sendGameStatus)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().SetGameText(csv[1]);
+
+        }
 
     }
 
@@ -193,5 +198,6 @@ public static class ServerToClientSignifier
     public const int TextChatMeassage = 6;
     public const int TurnInGame = 7;
     public const int sendChoosenTokenByPlayer = 8;
-
+    public const int SendwinLoseTie = 9;
+    public const int sendGameStatus = 10;
 }
