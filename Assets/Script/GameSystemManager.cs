@@ -10,15 +10,21 @@ using UnityEngine.UI;
 public class GameSystemManager : MonoBehaviour
 {
     GameObject SubmitButton, UsernameInput, PasswordInput, createToggle, LoginToggle , JoinGameRoomButton , MainMenu, LoginMenu, WaitingInQueueRoom , GameRoom,
-                ChatScroll,MsgInputField, SendTextButton;
+                ChatScroll,MsgInputField, SendTextButton, ReplayButton;
     GameObject HelloButton, GGButton, OOPSButton, NoButton, CurseButton,
-               WellPlayedButton, ThatwasFunButton, SickButton, GameText;
+               WellPlayedButton, ThatwasFunButton, SickButton, GameText, YouImage,OpponentImage;
     GameObject NetworkClient;
-    
+
+    public bool ReplayGame = false;
     public List<GameObject> tokens;
     public GameObject TextPrefaObject, ChatPanel; 
     List<Message> messageList = new List<Message>();
- //   static GameObject instace;
+    public int numOfFrames;
+    public int maxNumberOfFrames;
+    public int actionsIndex;
+    List<Action> actions = new List<Action>();
+    public Sprite[] images;
+    //   static GameObject instace;
     void Start()
     {
       //  instace = this.gameObject;
@@ -71,6 +77,12 @@ public class GameSystemManager : MonoBehaviour
                 SickButton = go;
             else if (go.name == "GameText")
                 GameText = go;
+            else if (go.name == "YouImage")
+                YouImage = go;
+            else if (go.name == "OpponentImage")
+                OpponentImage = go;
+            else if (go.name == "ReplayButton")
+                ReplayButton = go;
             else if (go.name == "Token")
                 tokens.Add(go);
 
@@ -79,7 +91,8 @@ public class GameSystemManager : MonoBehaviour
        
         SubmitButton.GetComponent<Button>().onClick.AddListener(SubmitButtonPressed);
         SendTextButton.GetComponent<Button>().onClick.AddListener(SendTextButtonPressed);
-        
+        ReplayButton.GetComponent<Button>().onClick.AddListener(ReplayButtonPressed);
+
         HelloButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(HelloButton.GetComponentInChildren<Text>().text); });
         GGButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(GGButton.GetComponentInChildren<Text>().text); });
         OOPSButton.GetComponent<Button>().onClick.AddListener(delegate { ChatMessageButtonsPressed(OOPSButton.GetComponentInChildren<Text>().text); });
@@ -98,7 +111,22 @@ public class GameSystemManager : MonoBehaviour
 
     void Update()
     {
-        
+        if(ReplayGame)
+		{
+            numOfFrames++;
+            if(numOfFrames>= maxNumberOfFrames)
+			{
+                ShowGameBoard(actions[actionsIndex].tokenIndex, actions[actionsIndex].tokenImages);
+                numOfFrames = 0;
+                actionsIndex++;
+			}
+            if(actionsIndex>=actions.Count)
+			{
+                numOfFrames = 0;
+                actionsIndex = 0;
+                ReplayGame = false;
+			}
+		}
     }
 
     public void ChatMessageButtonsPressed(string txt)
@@ -108,6 +136,34 @@ public class GameSystemManager : MonoBehaviour
         msg = ClientToServerSignifier.SendTextMessage + "," + NetworkClient.GetComponent<NetworkedClient>().PlayerUserName + "," + text;
         Debug.Log(msg);
         NetworkClient.GetComponent<NetworkedClient>().SendMessageToHost(msg);
+
+    }
+    public void AddToActions(int index, int img)
+	{
+        actions.Add(new Action(index, img));
+	}
+    public void ReplayButtonPressed()
+	{
+        if (!ReplayGame)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                tokens[i].GetComponent<Image>().sprite = null;
+            }
+            ReplayGame = true;
+            actionsIndex = 0;
+        }
+	}
+
+    IEnumerator ShowTokens()
+	{
+        yield return new WaitForSeconds(0.5f);
+        
+	}
+    public void SetPlayerOpponentTokens(int player, int opponent)
+	{
+        YouImage.GetComponent<Image>().sprite = images[player];
+        OpponentImage.GetComponent<Image>().sprite = images[opponent];
 
     }
     public void AddMessageToChatBox(string txtMesg)
@@ -210,12 +266,39 @@ public class GameSystemManager : MonoBehaviour
             if(tokens[i].GetComponent<TokenScript>().m_IndexNumber == indx)
 			{
                 tokens[i].GetComponent<TokenScript>().SetToken(token);
-
+                AddToActions(indx, token);
             }
 		}
 	}
+
+    public void ShowGameBoard(int indx, int token)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            if (tokens[i].GetComponent<TokenScript>().m_IndexNumber == indx)
+            {
+                tokens[i].GetComponent<TokenScript>().SetToken(token);
+                
+            }
+        }
+    }
+    private void OnApplicationQuit()
+	{
+		
+	}
 }
 
+public class Action
+{
+    public int tokenIndex;
+    public int tokenImages;
+
+    public Action(int tokenIndex, int tokenImages)
+	{
+        this.tokenImages = tokenImages;
+        this.tokenIndex = tokenIndex;
+	}
+}
 static public class GameState
 {
     public const int LoginMenu = 1;

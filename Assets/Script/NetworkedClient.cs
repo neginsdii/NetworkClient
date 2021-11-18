@@ -148,15 +148,24 @@ public class NetworkedClient : MonoBehaviour
         {
             tokenInGame = int.Parse(csv[1]);
             otherPlayerToken = int.Parse(csv[2]);
+            gameSystemManager.GetComponent<GameSystemManager>().SetPlayerOpponentTokens(tokenInGame,otherPlayerToken);
+
+
         }
         else if (signifier == ServerToClientSignifier.sendChoosenTokenByPlayer)
         {
-            if(int.Parse(csv[1])== id)
-			{
+            
+            if (csv[1] == PlayerUserName)
+            {
+                Debug.Log("You Played id:" + csv[1] + " your id: " + connectionID 
+                    + "  your token: "+ tokenInGame+ "  player token: "+ otherPlayerToken );
                 gameSystemManager.GetComponent<GameSystemManager>().markGameBoard(int.Parse(csv[2]), tokenInGame);
-			}
+
+            }
             else
             {
+                Debug.Log("Opponent played id:" + csv[1]+ " your id: "+ connectionID
+                    + "  your token: " + tokenInGame + "  player token: " + otherPlayerToken);
                 gameSystemManager.GetComponent<GameSystemManager>().markGameBoard(int.Parse(csv[2]), otherPlayerToken);
             }
 
