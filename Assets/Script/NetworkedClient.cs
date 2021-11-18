@@ -138,6 +138,21 @@ public class NetworkedClient : MonoBehaviour
 
         
         }
+        else if (signifier == ServerToClientSignifier.ObserveGameAccepted)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ShowObserveTextError(false);
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameState.GameRoom);
+            gameSystemManager.GetComponent<GameSystemManager>().ShowObserverPanel(true);
+
+
+
+        }
+        else if (signifier == ServerToClientSignifier.ObserveGameFailed)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ShowObserveTextError(true);
+
+
+        }
         else if (signifier == ServerToClientSignifier.TextChatMeassage)
         {
                gameSystemManager.GetComponent<GameSystemManager>().AddMessageToChatBox(csv[1]);
@@ -148,7 +163,8 @@ public class NetworkedClient : MonoBehaviour
         {
             tokenInGame = int.Parse(csv[1]);
             otherPlayerToken = int.Parse(csv[2]);
-            gameSystemManager.GetComponent<GameSystemManager>().SetPlayerOpponentTokens(tokenInGame,otherPlayerToken);
+            gameSystemManager.GetComponent<GameSystemManager>().SetPlayerOpponentTokens(tokenInGame,otherPlayerToken); 
+           gameSystemManager.GetComponent<GameSystemManager>().SetPlayersName(csv[3], csv[4]);
 
 
         }
@@ -170,6 +186,12 @@ public class NetworkedClient : MonoBehaviour
             }
 
         }
+        else if (signifier == ServerToClientSignifier.sendChoosenTokensToObservers)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().markGameBoard(int.Parse(csv[1]), int.Parse(csv[2]));
+
+        }
+
         else if (signifier == ServerToClientSignifier.sendGameStatus)
         {
             gameSystemManager.GetComponent<GameSystemManager>().SetGameText(csv[1]);
@@ -194,6 +216,7 @@ public static class ClientToServerSignifier
     public const int GameRoomPlay = 4;
     public const int SendTextMessage = 5;
     public const int SendChoosenToken = 6;
+    public const int requestToObserveGame = 7;
 }
 
 
@@ -209,4 +232,7 @@ public static class ServerToClientSignifier
     public const int sendChoosenTokenByPlayer = 8;
     public const int SendwinLoseTie = 9;
     public const int sendGameStatus = 10;
+    public const int ObserveGameAccepted = 11;
+    public const int ObserveGameFailed = 12;
+    public const int sendChoosenTokensToObservers = 13;
 }
